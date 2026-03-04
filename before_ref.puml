@@ -1,0 +1,200 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package flight.reservation {
+    class Customer {
+        - String email
+        - String name
+        - List<Order> orders
+        + Customer(String name, String email)
+        + FlightOrder createOrder(List<String> passengerNames, List<ScheduledFlight> flights, double price)
+        - boolean isOrderValid(List<String> passengerNames, List<ScheduledFlight> flights)
+        + String getEmail()
+        + void setEmail(String email)
+        + String getName()
+        + void setName(String name)
+        + List<Order> getOrders()
+        + void setOrders(List<Order> orders)
+    }
+
+    class Passenger {
+        - String name
+        + Passenger(String name)
+        + String getName()
+    }
+
+    class Airport {
+        - String name
+        - String code
+        - String location
+        - List<Flight> flights
+        - String[] allowedAircrafts
+        + Airport(String name, String code, String location)
+        + Airport(String name, String code, String location, String[] allowedAircrafts)
+        + String getName()
+        + String getCode()
+        + String getLocation()
+        + List<Flight> getFlights()
+        + void setFlights(List<Flight> flights)
+        + String[] getAllowedAircrafts()
+    }
+}
+
+package flight.reservation.plane {
+    class PassengerPlane {
+        + String model
+        + int passengerCapacity
+        + int crewCapacity
+        + PassengerPlane(String model)
+    }
+
+    class PassengerDrone {
+        - String model
+        + PassengerDrone(String model)
+    }
+
+    class Helicopter {
+        - String model
+        - int passengerCapacity
+        + Helicopter(String model)
+        + String getModel()
+        + int getPassengerCapacity()
+    }
+}
+
+package flight.reservation.flight {
+    class Schedule {
+        - List<ScheduledFlight> scheduledFlights
+        + Schedule()
+        + List<ScheduledFlight> getScheduledFlights()
+        + void scheduleFlight(Flight flight, Date date)
+        + void removeFlight(Flight flight)
+        + void removeScheduledFlight(ScheduledFlight flight)
+        + ScheduledFlight searchScheduledFlight(int flightNumber)
+        + void clear()
+    }
+
+    class Flight {
+        - int number
+        - Airport departure
+        - Airport arrival
+        # Object aircraft
+        + Flight(int number, Airport departure, Airport arrival, Object aircraft)
+        - void checkValidity()
+        - boolean isAircraftValid(Airport airport)
+        + Object getAircraft()
+        + int getNumber()
+        + Airport getDeparture()
+        + Airport getArrival()
+        + String toString()
+    }
+
+    class ScheduledFlight {
+        - List<Passenger> passengers
+        - Date departureTime
+        - double currentPrice
+        + ScheduledFlight(int number, Airport departure, Airport arrival, Object aircraft, Date departureTime)
+        + ScheduledFlight(int number, Airport departure, Airport arrival, Object aircraft, Date departureTime, double currentPrice)
+        + int getCrewMemberCapacity()
+        + void addPassengers(List<Passenger> passengers)
+        + void removePassengers(List<Passenger> passengers)
+        + int getCapacity()
+        + int getAvailableCapacity()
+        + Date getDepartureTime()
+        + List<Passenger> getPassengers()
+        + double getCurrentPrice()
+        + void setCurrentPrice(double currentPrice)
+    }
+}
+
+package flight.reservation.payment {
+    class CreditCard {
+        - double amount
+        - String number
+        - Date date
+        - String cvv
+        - boolean valid
+        + CreditCard(String number, Date date, String cvv)
+        + void setAmount(double amount)
+        + double getAmount()
+        + boolean isValid()
+        + void setValid()
+    }
+
+    class Paypal {
+        + {static} Map<String, String> DATA_BASE
+    }
+}
+
+package flight.reservation.order {
+    class Order {
+        - UUID id
+        - double price
+        - boolean isClosed
+        - Customer customer
+        - List<Passenger> passengers
+        + Order()
+        + UUID getId()
+        + double getPrice()
+        + void setPrice(double price)
+        + Customer getCustomer()
+        + void setCustomer(Customer customer)
+        + List<Passenger> getPassengers()
+        + void setPassengers(List<Passenger> passengers)
+        + boolean isClosed()
+        + void setClosed()
+    }
+
+    class FlightOrder {
+        - List<ScheduledFlight> flights
+        ~ {static} List<String> noFlyList
+        + FlightOrder(List<ScheduledFlight> flights)
+        + {static} List<String> getNoFlyList()
+        + List<ScheduledFlight> getScheduledFlights()
+        - boolean isOrderValid(Customer customer, List<String> passengerNames, List<ScheduledFlight> flights)
+        + boolean processOrderWithCreditCardDetail(String number, Date expirationDate, String cvv)
+        + boolean processOrderWithCreditCard(CreditCard creditCard)
+        - boolean cardIsPresentAndValid(CreditCard card)
+        + boolean processOrderWithPayPal(String email, String password)
+        + boolean payWithCreditCard(CreditCard card, double amount)
+        + boolean payWithPayPal(String email, String password, double amount)
+    }
+}
+
+class Runner {
+    ~ {static} List<Airport> airports
+    ~ {static} List<Object> aircrafts
+    ~ {static} List<Flight> flights
+    ~ {static} Schedule schedule
+    + {static} void main(String[] args)
+}
+
+' Inheritance relationships
+ScheduledFlight -up-|> Flight
+FlightOrder -up-|> Order
+
+' Associations and Dependencies
+Customer "1" *-- "*" Order : places >
+Customer ..> FlightOrder : creates >
+Order "*" o-- "1" Customer : belongs to >
+Order "1" *-- "*" Passenger : contains >
+
+Schedule "1" *-- "*" ScheduledFlight : manages >
+ScheduledFlight "1" *-- "*" Passenger : transports >
+
+Flight "*" o-- "1" Airport : departure
+Flight "*" o-- "1" Airport : arrival
+Airport "1" *-- "*" Flight : hosts >
+
+FlightOrder "1" *-- "*" ScheduledFlight : includes >
+FlightOrder ..> CreditCard : uses for payment >
+FlightOrder ..> Paypal : uses for payment >
+
+Runner ..> Airport : uses >
+Runner ..> Flight : uses >
+Runner ..> Schedule : uses >
+Runner ..> PassengerPlane : instantiates >
+Runner ..> Helicopter : instantiates >
+Runner ..> PassengerDrone : instantiates >
+
+@enduml

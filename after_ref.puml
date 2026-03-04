@@ -1,0 +1,293 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "flight.reservation" {
+    class Customer {
+        - email: String
+        - name: String
+        - orders: List<Order>
+        - observers: List<OrderObserver>
+        + Customer(name: String, email: String)
+        + createOrder(passengerNames: List<String>, flights: List<ScheduledFlight>, price: double): FlightOrder
+        + addObserver(observer: OrderObserver): void
+        + removeObserver(observer: OrderObserver): void
+        + notifyObservers(order: FlightOrder): void
+        + getEmail(): String
+        + setEmail(email: String): void
+        + getName(): String
+        + setName(name: String): void
+        + getOrders(): List<Order>
+        + setOrders(orders: List<Order>): void
+    }
+
+    class Passenger {
+        - name: String
+        + Passenger(name: String)
+        + getName(): String
+    }
+
+    class Airport {
+        - name: String
+        - code: String
+        - location: String
+        - flights: List<Flight>
+        - allowedAircrafts: String[]
+        + Airport(name: String, code: String, location: String)
+        + Airport(name: String, code: String, location: String, allowedAircrafts: String[])
+        + getName(): String
+        + getCode(): String
+        + getLocation(): String
+        + getFlights(): List<Flight>
+        + setFlights(flights: List<Flight>): void
+        + getAllowedAircrafts(): String[]
+    }
+}
+
+package "flight.reservation.plane" {
+    interface Aircraft {
+        + getModel(): String
+        + getPassengerCapacity(): int
+        + getCrewCapacity(): int
+    }
+
+    class AircraftFactory {
+        + {static} create(type: String, model: String): Aircraft
+    }
+
+    class PassengerPlane {
+        + model: String
+        + passengerCapacity: int
+        + crewCapacity: int
+        + PassengerPlane(model: String)
+        + getModel(): String
+        + getPassengerCapacity(): int
+        + getCrewCapacity(): int
+    }
+
+    class PassengerDrone {
+        - model: String
+        + PassengerDrone(model: String)
+        + getModel(): String
+        + getPassengerCapacity(): int
+        + getCrewCapacity(): int
+    }
+
+    class Helicopter {
+        - model: String
+        - passengerCapacity: int
+        + Helicopter(model: String)
+        + getModel(): String
+        + getPassengerCapacity(): int
+        + getCrewCapacity(): int
+    }
+    
+    PassengerPlane ..|> Aircraft
+    PassengerDrone ..|> Aircraft
+    Helicopter ..|> Aircraft
+    AircraftFactory ..> Aircraft : creates >
+}
+
+package "flight.reservation.flight" {
+    class Flight {
+        - number: int
+        - departure: Airport
+        - arrival: Airport
+        # aircraft: Aircraft
+        + Flight(number: int, departure: Airport, arrival: Airport, aircraft: Aircraft)
+        - checkValidity(): void
+        - isAircraftValid(airport: Airport): boolean
+        + getAircraft(): Aircraft
+        + getNumber(): int
+        + getDeparture(): Airport
+        + getArrival(): Airport
+        + toString(): String
+    }
+
+    class ScheduledFlight {
+        - passengers: List<Passenger>
+        - departureTime: Date
+        - currentPrice: double
+        + ScheduledFlight(number: int, departure: Airport, arrival: Airport, aircraft: Aircraft, departureTime: Date)
+        + ScheduledFlight(number: int, departure: Airport, arrival: Airport, aircraft: Aircraft, departureTime: Date, currentPrice: double)
+        + getCrewMemberCapacity(): int
+        + addPassengers(passengers: List<Passenger>): void
+        + removePassengers(passengers: List<Passenger>): void
+        + getCapacity(): int
+        + getAvailableCapacity(): int
+        + getDepartureTime(): Date
+        + getPassengers(): List<Passenger>
+        + getCurrentPrice(): double
+        + setCurrentPrice(currentPrice: double): void
+    }
+
+    class Schedule {
+        - scheduledFlights: List<ScheduledFlight>
+        + Schedule()
+        + getScheduledFlights(): List<ScheduledFlight>
+        + scheduleFlight(flight: Flight, date: Date): void
+        + removeFlight(flight: Flight): void
+        + removeScheduledFlight(flight: ScheduledFlight): void
+        + searchScheduledFlight(flightNumber: int): ScheduledFlight
+        + clear(): void
+    }
+    
+    ScheduledFlight -up-|> Flight
+    Schedule o--> "*" ScheduledFlight
+    Flight --> "1" Airport : departure
+    Flight --> "1" Airport : arrival
+    Flight --> "1" Aircraft : aircraft
+    ScheduledFlight o--> "*" Passenger
+}
+
+package "flight.reservation.payment" {
+    interface PaymentProcessor {
+        + pay(amount: double): boolean
+    }
+
+    class CreditCard {
+        - amount: double
+        - number: String
+        - date: Date
+        - cvv: String
+        - valid: boolean
+        + CreditCard(number: String, date: Date, cvv: String)
+        + setAmount(amount: double): void
+        + getAmount(): double
+        + isValid(): boolean
+        + setValid(): void
+    }
+
+    class CreditCardAdapter {
+        - creditCard: CreditCard
+        + CreditCardAdapter(creditCard: CreditCard)
+        + pay(amount: double): boolean
+    }
+
+    class Paypal {
+        + {static} DATA_BASE: Map<String, String>
+    }
+
+    class PaypalAdapter {
+        - email: String
+        - password: String
+        + PaypalAdapter(email: String, password: String)
+        + pay(amount: double): boolean
+    }
+    
+    CreditCardAdapter ..|> PaymentProcessor
+    PaypalAdapter ..|> PaymentProcessor
+    CreditCardAdapter --> "1" CreditCard
+    PaypalAdapter ..> Paypal : uses >
+}
+
+package "flight.reservation.order" {
+    class Order {
+        - id: UUID
+        - price: double
+        - isClosed: boolean
+        - customer: Customer
+        - passengers: List<Passenger>
+        + Order()
+        + getId(): UUID
+        + getPrice(): double
+        + setPrice(price: double): void
+        + getCustomer(): Customer
+        + setCustomer(customer: Customer): void
+        + getPassengers(): List<Passenger>
+        + setPassengers(passengers: List<Passenger>): void
+        + isClosed(): boolean
+        + setClosed(): void
+    }
+
+    class FlightOrder {
+        - flights: List<ScheduledFlight>
+        ~ {static} noFlyList: List<String>
+        + FlightOrder(flights: List<ScheduledFlight>)
+        + {static} getNoFlyList(): List<String>
+        + getScheduledFlights(): List<ScheduledFlight>
+        + processOrder(processor: PaymentProcessor): boolean
+    }
+
+    interface OrderObserver {
+        + onOrderCreated(order: FlightOrder): void
+    }
+
+    class EmailConfirmationObserver {
+        + onOrderCreated(order: FlightOrder): void
+    }
+
+    class FlightOrderBuilder {
+        - customer: Customer
+        - flights: List<ScheduledFlight>
+        - passengerNames: List<String>
+        - price: double
+        + forCustomer(customer: Customer): FlightOrderBuilder
+        + onFlights(flights: List<ScheduledFlight>): FlightOrderBuilder
+        + withPassengers(passengerNames: List<String>): FlightOrderBuilder
+        + atPrice(price: double): FlightOrderBuilder
+        + build(): FlightOrder
+    }
+
+    class OrderRequest {
+        - customer: Customer
+        - passengerNames: List<String>
+        - flights: List<ScheduledFlight>
+        + OrderRequest(customer: Customer, passengerNames: List<String>, flights: List<ScheduledFlight>)
+        + getCustomer(): Customer
+        + getPassengerNames(): List<String>
+        + getFlights(): List<ScheduledFlight>
+    }
+
+    abstract class ValidationHandler {
+        - next: ValidationHandler
+        + setNext(next: ValidationHandler): ValidationHandler
+        + validate(request: OrderRequest): boolean
+        # {abstract} handle(request: OrderRequest): boolean
+    }
+
+    class SeatCapacityHandler {
+        # handle(request: OrderRequest): boolean
+    }
+
+    class NoFlyPassengerHandler {
+        # handle(request: OrderRequest): boolean
+    }
+
+    class NoFlyCustomerHandler {
+        # handle(request: OrderRequest): boolean
+    }
+    
+    FlightOrder -up-|> Order
+    EmailConfirmationObserver ..|> OrderObserver
+    FlightOrder o--> "*" ScheduledFlight
+    FlightOrder ..> PaymentProcessor : uses
+    
+    SeatCapacityHandler -up-|> ValidationHandler
+    NoFlyPassengerHandler -up-|> ValidationHandler
+    NoFlyCustomerHandler -up-|> ValidationHandler
+    ValidationHandler --> "1" ValidationHandler : next
+    ValidationHandler ..> OrderRequest : validates >
+    
+    FlightOrderBuilder ..> FlightOrder : builds >
+    FlightOrderBuilder ..> ValidationHandler : uses >
+}
+
+class Runner {
+    ~ {static} airports: List<Airport>
+    ~ {static} aircrafts: List<Aircraft>
+    ~ {static} flights: List<Flight>
+    ~ {static} schedule: Schedule
+    + {static} main(args: String[]): void
+}
+
+Customer "1" o--> "*" Order
+Customer "1" o--> "*" OrderObserver
+Order "1" --> "1" Customer
+Order "1" o--> "*" Passenger
+Runner ..> Airport
+Runner ..> Aircraft
+Runner ..> Flight
+Runner ..> Schedule
+
+@enduml
