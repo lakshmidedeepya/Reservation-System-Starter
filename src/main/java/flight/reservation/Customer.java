@@ -2,17 +2,19 @@ package flight.reservation;
 
 import flight.reservation.flight.ScheduledFlight;
 import flight.reservation.order.FlightOrder;
+import flight.reservation.order.FlightOrderBuilder;
 import flight.reservation.order.Order;
+import flight.reservation.order.OrderObserver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Customer {
 
     private String email;
     private String name;
     private List<Order> orders;
+    private final List<OrderObserver> observers = new ArrayList<>();
 
     public Customer(String name, String email) {
         this.name = name;
@@ -21,35 +23,28 @@ public class Customer {
     }
 
     public FlightOrder createOrder(List<String> passengerNames, List<ScheduledFlight> flights, double price) {
-        if (!isOrderValid(passengerNames, flights)) {
-            throw new IllegalStateException("Order is not valid");
-        }
-        FlightOrder order = new FlightOrder(flights);
-        order.setCustomer(this);
-        order.setPrice(price);
-        List<Passenger> passengers = passengerNames
-                .stream()
-                .map(Passenger::new)
-                .collect(Collectors.toList());
-        order.setPassengers(passengers);
-        order.getScheduledFlights().forEach(scheduledFlight -> scheduledFlight.addPassengers(passengers));
-        orders.add(order);
+        FlightOrder order = new FlightOrderBuilder()
+                .forCustomer(this)
+                .onFlights(flights)
+                .withPassengers(passengerNames)
+                .atPrice(price)
+                .build();
+        notifyObservers(order);
         return order;
     }
 
-    private boolean isOrderValid(List<String> passengerNames, List<ScheduledFlight> flights) {
-        boolean valid = true;
-        valid = valid && !FlightOrder.getNoFlyList().contains(this.getName());
-        valid = valid && passengerNames.stream().noneMatch(passenger -> FlightOrder.getNoFlyList().contains(passenger));
-        valid = valid && flights.stream().allMatch(scheduledFlight -> {
-            try {
-                return scheduledFlight.getAvailableCapacity() >= passengerNames.size();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-                return false;
-            }
-        });
-        return valid;
+    public void addObserver(OrderObserver observer) {
+        if (observer != null) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(OrderObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void notifyObservers(FlightOrder order) {
+        observers.forEach(observer -> observer.onOrderCreated(order));
     }
 
     public String getEmail() {
