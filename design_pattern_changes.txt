@@ -1,0 +1,48 @@
+Design Pattern Changes Summary
+
+1) Factory/Strategy (Aircraft)
+- Status: Reverted changes in ScheduledFlight per request; no new Factory/Strategy edits remain there.
+- ScheduledFlight continues to accept Object aircraft and uses instanceof checks for capacity and crew.
+- Flight continues to use Aircraft (already present before), with only an import cleanup.
+- Files: src/main/java/flight/reservation/flight/ScheduledFlight.java, src/main/java/flight/reservation/flight/Flight.java
+
+2) Adapter Pattern (Payments)
+- Added a unified payment interface and adapters to wrap existing CreditCard/Paypal logic.
+- Replaced multiple payment methods on FlightOrder with a single processOrder(PaymentProcessor).
+- Updated ScenarioTest to pass adapters instead of calling the removed methods.
+- Files:
+  - src/main/java/flight/reservation/payment/PaymentProcessor.java
+  - src/main/java/flight/reservation/payment/CreditCardAdapter.java
+  - src/main/java/flight/reservation/payment/PaypalAdapter.java
+  - src/main/java/flight/reservation/order/FlightOrder.java
+  - src/test/java/flight.reservation/ScenarioTest.java
+
+3) Observer Pattern (Post-Booking Events)
+- Added OrderObserver interface and EmailConfirmationObserver as a concrete observer.
+- Customer now maintains observers, supports add/remove, and notifies on order creation.
+- Files:
+  - src/main/java/flight/reservation/order/OrderObserver.java
+  - src/main/java/flight/reservation/order/EmailConfirmationObserver.java
+  - src/main/java/flight/reservation/Customer.java
+
+4) Builder Pattern (Order Creation)
+- Added FlightOrderBuilder with fluent setters and a build() method that assembles the order.
+- Customer.createOrder now delegates to the builder rather than manual assembly.
+- Files:
+  - src/main/java/flight/reservation/order/FlightOrderBuilder.java
+  - src/main/java/flight/reservation/Customer.java
+
+5) Chain of Responsibility (Validation)
+- Added OrderRequest DTO and ValidationHandler base class.
+- Implemented NoFlyCustomerHandler, NoFlyPassengerHandler, SeatCapacityHandler.
+- Builder wires the chain and validates; invalid requests throw IllegalStateException.
+- Removed duplicated isOrderValid logic from Customer and FlightOrder.
+- Files:
+  - src/main/java/flight/reservation/order/OrderRequest.java
+  - src/main/java/flight/reservation/order/ValidationHandler.java
+  - src/main/java/flight/reservation/order/NoFlyCustomerHandler.java
+  - src/main/java/flight/reservation/order/NoFlyPassengerHandler.java
+  - src/main/java/flight/reservation/order/SeatCapacityHandler.java
+  - src/main/java/flight/reservation/order/FlightOrderBuilder.java
+  - src/main/java/flight/reservation/Customer.java
+  - src/main/java/flight/reservation/order/FlightOrder.java

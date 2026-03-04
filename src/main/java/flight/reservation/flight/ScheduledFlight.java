@@ -31,16 +31,19 @@ public class ScheduledFlight extends Flight {
     }
 
     public int getCrewMemberCapacity() throws NoSuchFieldException {
-        if (this.aircraft instanceof PassengerPlane) {
-            return ((PassengerPlane) this.aircraft).crewCapacity;
-        }
-        if (this.aircraft instanceof Helicopter) {
-            return 2;
-        }
-        if (this.aircraft instanceof PassengerDrone) {
-            return 0;
-        }
-        throw new NoSuchFieldException("this aircraft has no information about its crew capacity");
+        // if (this.aircraft instanceof PassengerPlane) {
+        //     return ((PassengerPlane) this.aircraft).crewCapacity;
+        // }
+        // if (this.aircraft instanceof Helicopter) {
+        //     return 2;
+        // }
+        // if (this.aircraft instanceof PassengerDrone) {
+        //     return 0;
+        // }
+        // throw new NoSuchFieldException("this aircraft has no information about its crew capacity");
+
+        return this.aircraft.getCrewCapacity();
+    
     }
 
     public void addPassengers(List<Passenger> passengers) {
@@ -52,16 +55,18 @@ public class ScheduledFlight extends Flight {
     }
 
     public int getCapacity() throws NoSuchFieldException {
-        if (this.aircraft instanceof PassengerPlane) {
-            return ((PassengerPlane) this.aircraft).passengerCapacity;
-        }
-        if (this.aircraft instanceof Helicopter) {
-            return ((Helicopter) this.aircraft).getPassengerCapacity();
-        }
-        if (this.aircraft instanceof PassengerDrone) {
-            return 4;
-        }
-        throw new NoSuchFieldException("this aircraft has no information about its capacity");
+        // if (this.aircraft instanceof PassengerPlane) {
+        //     return ((PassengerPlane) this.aircraft).passengerCapacity;
+        // }
+        // if (this.aircraft instanceof Helicopter) {
+        //     return ((Helicopter) this.aircraft).getPassengerCapacity();
+        // }
+        // if (this.aircraft instanceof PassengerDrone) {
+        //     return 4;
+        // }
+        // throw new NoSuchFieldException("this aircraft has no information about its capacity");
+        
+        return this.aircraft.getPassengerCapacity();
     }
 
     public int getAvailableCapacity() throws NoSuchFieldException {
