@@ -3,8 +3,6 @@ package flight.reservation.flight;
 import flight.reservation.Airport;
 import flight.reservation.plane.Aircraft;
 
-import flight.reservation.plane.Aircraft;
-
 import java.util.Arrays;
 
 public class Flight {
