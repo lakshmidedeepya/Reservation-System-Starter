@@ -1,9 +1,8 @@
 package flight.reservation.flight;
 
 import flight.reservation.Airport;
-import flight.reservation.plane.Helicopter;
-import flight.reservation.plane.PassengerDrone;
-import flight.reservation.plane.PassengerPlane;
+
+import flight.reservation.plane.Aircraft;
 
 import java.util.Arrays;
 

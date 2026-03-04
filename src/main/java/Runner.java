@@ -1,14 +1,14 @@
 import flight.reservation.Airport;
 import flight.reservation.flight.Schedule;
 import flight.reservation.flight.Flight;
-import flight.reservation.plane.Helicopter;
-import flight.reservation.plane.PassengerDrone;
-import flight.reservation.plane.PassengerPlane;
+import flight.reservation.plane.Aircraft;
+import flight.reservation.plane.AircraftFactory;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class Runner {
+
     static List<Airport> airports = Arrays.asList(
             new Airport("Berlin Airport", "BER", "Berlin, Berlin"),
             new Airport("Frankfurt Airport", "FRA", "Frankfurt, Hesse"),
@@ -21,12 +21,12 @@ public class Runner {
     );
 
     static List<Aircraft> aircrafts = Arrays.asList(
-        AircraftFactory.create("PLANE", "A380"),
-        AircraftFactory.create("PLANE", "A350"),
-        AircraftFactory.create("PLANE", "Embraer 190"),
-        AircraftFactory.create("PLANE", "Antonov AN2"),
-        AircraftFactory.create("HELI", "H1"),
-        AircraftFactory.create("DRONE", "HypaHype")
+            AircraftFactory.create("PLANE", "A380"),
+            AircraftFactory.create("PLANE", "A350"),
+            AircraftFactory.create("PLANE", "Embraer 190"),
+            AircraftFactory.create("PLANE", "Antonov AN2"),
+            AircraftFactory.create("HELI", "H1"),
+            AircraftFactory.create("DRONE", "HypaHype")
     );
 
     static List<Flight> flights = Arrays.asList(
