@@ -20,13 +20,13 @@ public class Runner {
             new Airport("Chengdu Shuangliu International Airport", "CTU", "Shuangliu-Wuhou, Chengdu, Sichuan")
     );
 
-    static List<Object> aircrafts = Arrays.asList(
-            new PassengerPlane("A380"),
-            new PassengerPlane("A350"),
-            new PassengerPlane("Embraer 190"),
-            new PassengerPlane("Antonov AN2"),
-            new Helicopter("H1"),
-            new PassengerDrone("HypaHype")
+    static List<Aircraft> aircrafts = Arrays.asList(
+        AircraftFactory.create("PLANE", "A380"),
+        AircraftFactory.create("PLANE", "A350"),
+        AircraftFactory.create("PLANE", "Embraer 190"),
+        AircraftFactory.create("PLANE", "Antonov AN2"),
+        AircraftFactory.create("HELI", "H1"),
+        AircraftFactory.create("DRONE", "HypaHype")
     );
 
     static List<Flight> flights = Arrays.asList(
